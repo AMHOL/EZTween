@@ -47,6 +47,9 @@
     if ( isNaN(duration) || duration <= 0 ) {
       throw 'Duration must be a positive integer';
     }
+    if ( interval > duration ) {
+      duration = interval;
+    }
     interval = makeIntervalFullyDivisible(interval, duration);
     
     var _self = this;
