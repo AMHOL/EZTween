@@ -1,5 +1,5 @@
 (function(window, undefined) {
-  window.EZ = {};
+  window.EZ = window.EZ || {};
   window.EZ.Easing = {
     Linear: function(percentComplete) {
       return percentComplete;
