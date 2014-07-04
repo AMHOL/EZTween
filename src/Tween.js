@@ -13,7 +13,7 @@
     this.to = from;
     this.duration = 0;
     this.interval = 10;
-    this.tweenFn = EZ.Easing.SpeedInOut;
+    this.tweenFn = EZ.Easing.Linear;
   };
   Tween.prototype.setTo = function(to) {
     if ( (typeof to) !== (typeof this.from) ) {
@@ -38,6 +38,9 @@
     var timeElapsed = 0;
     var duration = parseInt(this.duration, 10);
     var interval = parseInt(this.interval, 10);
+    if ( typeof this.tweenFn !== 'function' ) {
+      throw 'tweenFn must be a function';
+    }
     if ( isNaN(interval) || interval <= 0 ) {
       throw 'Interval must be a positive integer';
     }
