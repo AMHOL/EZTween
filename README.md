@@ -13,6 +13,6 @@ Because I want to animate Google maps markers and need to tween between latLng's
 (new EZ.Tween({ x: 100, y: 150 })).setTo({ x: 150, y: 250 }).setDuration(3000).start(function(current) { console.log(current); });
 ```
 
-##### Example (using library at commit d05342ecbc7d5a2832ba059844d551698188fc33)
+##### Example
 
-http://jsfiddle.net/J6G3k/
+http://jsfiddle.net/J6G3k/1/
