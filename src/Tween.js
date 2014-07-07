@@ -58,9 +58,6 @@
       timeElapsed += interval;
       if ( typeof _self.from === 'number' ) {
         currentValue = tweenNumeric(_self.from, _self.to - _self.from, _self.tweenFn(timeElapsed / duration));
-        if ( currentValue > _self.to ) {
-          currentValue = _self.to;
-        }
       } else {
         currentValue = clone(_self.from);
         for ( var k in _self.to ) {
@@ -84,7 +81,11 @@
   };
   window.EZ.Tween = Tween;
   function tweenNumeric(from, valueDiff, percentComplete) {
-    return from + (valueDiff * percentComplete);
+    var result = from + (valueDiff * percentComplete);
+    if ( result > from + valueDiff) {
+      result = from + valueDiff;
+    }
+    return result;
   }
   function makeIntervalFullyDivisible(interval, duration) {
     return duration / Math.ceil(duration / interval);
