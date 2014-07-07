@@ -9,11 +9,15 @@
     if ( typeof from !== 'number' && Object.prototype.toString.call(from) !== '[object Object]' ) {
       throw 'from value must be an object or an integer';
     }
+    this.started = false;
+    this.playing = false;
     this.from = from;
     this.to = from;
     this.duration = 0;
     this.interval = 10;
     this.tweenFn = EZ.Easing.Linear;
+    this.stepCallback = undefined;
+    this.completeCallback = undefined;
   };
   Tween.prototype.setTo = function(to) {
     if ( (typeof to) !== (typeof this.from) ) {
@@ -34,8 +38,22 @@
     this.tweenFn = tweenFn;
     return this;
   };
+  Tween.prototype.setStepCallback = function(stepCallback) {
+    this.stepCallback = stepCallback;
+    return this;
+  };
+  Tween.prototype.setCompleteCallback = function(completeCallback) {
+    this.completeCallback = completeCallback;
+    return this;
+  };
   Tween.prototype.start = function(stepCallback, completeCallback) {
-    var timeElapsed = 0;
+    this.setStepCallback(stepCallback);
+    this.setCompleteCallback(completeCallback);
+    if ( this.started ) {
+      return this.play();
+    }
+    this.playing = this.started = true;
+    timeElapsed = 0;
     var duration = parseInt(this.duration, 10);
     var interval = parseInt(this.interval, 10);
     if ( typeof this.tweenFn !== 'function' ) {
@@ -54,32 +72,58 @@
     
     var _self = this;
     var currentValue;
-    var eLoop = window.setInterval(function() {
-      timeElapsed += interval;
-      if ( typeof _self.from === 'number' ) {
-        currentValue = tweenNumeric(_self.from, _self.to - _self.from, _self.tweenFn(timeElapsed / duration));
-      } else {
-        currentValue = clone(_self.from);
-        for ( var k in _self.to ) {
-          if ( typeof _self.from[k] !== 'number' || typeof _self.to[k] !== 'number' ) {
-            continue;
-          }
-          currentValue[k] = tweenNumeric(_self.from[k], _self.to[k] - _self.from[k], _self.tweenFn(timeElapsed / duration));
-        }
-      }
-      if ( typeof stepCallback === 'function' ) {
-        stepCallback.call(this, currentValue);
-      }
-      if ( timeElapsed >= duration ) {
-        if ( typeof completeCallback === 'function' ) {
-          completeCallback.call(this, currentValue);
-        }
-        window.clearInterval(eLoop);
-      }
+    eLoop = window.setInterval(function() {
+      step(_self, interval, duration);
     }, interval);
     return this;
   };
+  Tween.prototype.pause = Tween.prototype.stop = function() {
+    if ( this.playing ) {
+      window.clearInterval(eLoop);
+      this.playing = false;
+    }
+    return this;
+  };
+  Tween.prototype.play = function() {
+    if ( !this.started ) {
+      return this.start();
+    }
+    if ( !this.playing ) {
+      var _self = this;
+      eLoop = window.setInterval(function() {
+        step(_self, _self.interval, _self.duration);
+      }, this.interval);
+      this.playing = true;
+    }
+    return this;
+  };
   window.EZ.Tween = Tween;
+  var timeElapsed;
+  var eLoop;
+  function step(tween, interval, duration) {
+    timeElapsed += interval;
+    if ( typeof tween.from === 'number' ) {
+      currentValue = tweenNumeric(tween.from, tween.to - tween.from, tween.tweenFn(timeElapsed / duration));
+    } else {
+      currentValue = clone(tween.from);
+      for ( var k in tween.to ) {
+        if ( typeof tween.from[k] !== 'number' || typeof tween.to[k] !== 'number' ) {
+          continue;
+        }
+        currentValue[k] = tweenNumeric(tween.from[k], tween.to[k] - tween.from[k], tween.tweenFn(timeElapsed / duration));
+      }
+    }
+    if ( typeof tween.stepCallback === 'function' ) {
+      tween.stepCallback.call(tween, currentValue);
+    }
+    if ( timeElapsed >= duration ) {
+      if ( typeof tween.completeCallback === 'function' ) {
+        tween.completeCallback.call(tween, currentValue);
+      }
+      tween.stop();
+    }
+    return timeElapsed;
+  }
   function tweenNumeric(from, valueDiff, percentComplete) {
     var result = from + (valueDiff * percentComplete);
     if ( result > from + valueDiff) {
