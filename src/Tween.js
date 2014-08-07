@@ -47,8 +47,12 @@
     return this;
   };
   Tween.prototype.start = function(stepCallback, completeCallback) {
-    this.setStepCallback(stepCallback);
-    this.setCompleteCallback(completeCallback);
+    if ( typeof stepCallback === 'function ' ) {
+      this.setStepCallback(stepCallback);
+    }
+    if ( typeof completeCallback === 'function ' ) {
+      this.setCompleteCallback(completeCallback);
+    }
     if ( this.started ) {
       return this.play();
     }
